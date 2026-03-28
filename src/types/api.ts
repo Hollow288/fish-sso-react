@@ -36,3 +36,14 @@ export interface ErrorResponse {
   error_description: string;
   login_url?: string;
 }
+
+export interface ResetCodeRequest {
+  username: string;
+  email: string;
+}
+
+export interface ResetPasswordRequest {
+  username: string;
+  new_password: string;
+  code: string;
+}

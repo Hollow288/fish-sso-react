@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useLocation, Link } from 'react-router-dom';
 import { authApi } from '../api/auth';
 import type { ErrorResponse } from '../types/api';
 import PageShell from '../components/PageShell';
@@ -24,6 +24,8 @@ export default function Login() {
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [searchParams] = useSearchParams();
+  const location = useLocation();
+  const successMessage = (location.state as { message?: string })?.message;
   const rawReturnTo = searchParams.get('return_to');
   const returnTo = normalizeReturnTo(rawReturnTo);
 
@@ -126,12 +128,18 @@ export default function Login() {
               </button>
             </div>
           </div>
+          {successMessage && !error && <div className="success">{successMessage}</div>}
           {error && <div className="error">{error}</div>}
         </div>
 
-        <button type="submit" className="btn" disabled={isSubmitting}>
-          {isSubmitting ? '登录中...' : '登录'}
-        </button>
+        <div className="action-stack">
+          <button type="submit" className="btn" disabled={isSubmitting}>
+            {isSubmitting ? '登录中...' : '登录'}
+          </button>
+          <div className="form-footer">
+            <Link to="/forgot-password" className="form-link">忘记密码?</Link>
+          </div>
+        </div>
       </form>
     </PageShell>
   );

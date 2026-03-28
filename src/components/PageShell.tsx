@@ -17,6 +17,7 @@ type PageShellProps = {
   children: ReactNode;
   tone?: 'default' | 'success' | 'danger';
   variant?: 'default' | 'auth';
+  contentClassName?: string;
 };
 
 export default function PageShell({
@@ -30,12 +31,13 @@ export default function PageShell({
   headerAlign = 'left',
   children,
   tone = 'default',
-  variant = 'default'
+  variant = 'default',
+  contentClassName
 }: PageShellProps) {
   return (
     <div className={`page-shell page-shell--${tone}`}>
       <div className="page-shell__frame">
-        <main className={`page-shell__content page-shell__content--${variant}`}>
+        <main className={`page-shell__content page-shell__content--${variant}${contentClassName ? ` ${contentClassName}` : ''}`}>
           <header className={`page-shell__header page-shell__header--${headerAlign}`}>
             {headerIconSrc && (
               <span className="page-shell__icon-wrap" aria-hidden="true">
