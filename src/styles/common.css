@@ -770,6 +770,7 @@ body {
 .consent-scope-list {
   display: grid;
   gap: 2px;
+  overflow-y: auto
 }
 
 .consent-scope-item {

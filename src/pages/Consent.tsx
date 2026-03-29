@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import type { AxiosError } from 'axios';
 import { authApi } from '../api/auth';
 import type { ConsentContext, ErrorResponse } from '../types/api';
 import PageShell from '../components/PageShell';
@@ -24,9 +25,10 @@ export default function Consent() {
       try {
         const res = await authApi.getConsentContext(searchParams);
         setContext(res.data);
-      } catch (err: any) {
-        const errorData = err.response?.data as ErrorResponse;
-        if (err.response?.status === 401 && errorData?.login_url) {
+      } catch (err: unknown) {
+        const axiosError = err as AxiosError<ErrorResponse>;
+        const errorData = axiosError.response?.data;
+        if (axiosError.response?.status === 401 && errorData?.login_url) {
           window.location.href = errorData.login_url;
         } else {
           setError(errorData?.error_description || 'Failed to load consent details');
@@ -45,12 +47,25 @@ export default function Consent() {
     setPendingAction(action);
     setError('');
 
+    const clientId = searchParams.get('client_id') || context?.clientId;
+    const redirectUri = searchParams.get('redirect_uri') || context?.redirectUri;
+    const scope = searchParams.get('scope') || context?.scope || undefined;
+    const state = searchParams.get('state') || context?.state || undefined;
+    const nonce = searchParams.get('nonce') || context?.nonce || undefined;
+
+    if (!clientId || !redirectUri) {
+      setError('Missing required authorization parameters');
+      setPendingAction(null);
+      return;
+    }
+
     try {
       const res = await authApi.submitConsent({
-        client_id: searchParams.get('client_id')!,
-        redirect_uri: searchParams.get('redirect_uri')!,
-        scope: searchParams.get('scope') || undefined,
-        state: searchParams.get('state') || undefined,
+        client_id: clientId,
+        redirect_uri: redirectUri,
+        scope,
+        state,
+        nonce,
         action
       });
       if (!res.data.redirect_url) {
@@ -60,8 +75,8 @@ export default function Consent() {
       }
 
       window.location.href = res.data.redirect_url;
-    } catch (err: any) {
-      const errorData = err.response?.data as ErrorResponse;
+    } catch (err: unknown) {
+      const errorData = (err as AxiosError<ErrorResponse>).response?.data;
       setError(errorData?.error_description || 'Action failed');
       setPendingAction(null);
     }

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
+import type { AxiosError } from 'axios';
 import { authApi } from '../api/auth';
 import type { ErrorResponse } from '../types/api';
 import PageShell from '../components/PageShell';
@@ -52,9 +53,10 @@ export default function ForgotPassword() {
       await authApi.sendResetCode({ username, email });
       setCountdown(60);
       setStep('reset');
-    } catch (err: any) {
-      const status = err.response?.status;
-      const data = err.response?.data as ErrorResponse;
+    } catch (err: unknown) {
+      const axiosError = err as AxiosError<ErrorResponse>;
+      const status = axiosError.response?.status;
+      const data = axiosError.response?.data;
       if (status === 429) {
         setError('发送过于频繁，请稍后再试');
         setCountdown(60);
@@ -88,8 +90,8 @@ export default function ForgotPassword() {
     try {
       await authApi.resetPassword({ username, new_password: newPassword, code });
       navigate('/login', { state: { message: '密码重置成功，请重新登录' } });
-    } catch (err: any) {
-      const data = err.response?.data as ErrorResponse;
+    } catch (err: unknown) {
+      const data = (err as AxiosError<ErrorResponse>).response?.data;
       if (data?.error === 'code_exhausted') {
         setError('验证码错误次数过多，请重新获取');
         setStep('send-code');
@@ -113,9 +115,10 @@ export default function ForgotPassword() {
       await authApi.sendResetCode({ username, email });
       setCountdown(60);
       setError('');
-    } catch (err: any) {
-      const status = err.response?.status;
-      const data = err.response?.data as ErrorResponse;
+    } catch (err: unknown) {
+      const axiosError = err as AxiosError<ErrorResponse>;
+      const status = axiosError.response?.status;
+      const data = axiosError.response?.data;
       if (status === 429) {
         setError('发送过于频繁，请稍后再试');
         setCountdown(60);

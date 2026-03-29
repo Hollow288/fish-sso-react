@@ -16,6 +16,7 @@ export interface ConsentContext {
   username: string;
   displayName: string;
   state?: string;
+  nonce?: string;
   scope?: string;
 }
 
@@ -24,6 +25,7 @@ export interface ConsentRequest {
   redirect_uri: string;
   scope?: string;
   state?: string;
+  nonce?: string;
   action: 'approve' | 'deny';
 }
 

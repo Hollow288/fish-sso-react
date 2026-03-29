@@ -13,7 +13,9 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/consent" element={<Consent />} />
+        <Route path="/oauth/consent" element={<Consent />} />
         <Route path="/callback" element={<Callback />} />
+        <Route path="/oauth/callback" element={<Callback />} />
         <Route path="/" element={<Home />} />
       </Routes>
     </BrowserRouter>

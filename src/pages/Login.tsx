@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { useSearchParams, useLocation, Link } from 'react-router-dom';
+import type { AxiosError } from 'axios';
 import { authApi } from '../api/auth';
 import type { ErrorResponse } from '../types/api';
 import PageShell from '../components/PageShell';
@@ -42,8 +43,8 @@ export default function Login() {
       });
 
       window.location.href = returnTo;
-    } catch (err: any) {
-      const errorData = err.response?.data as ErrorResponse;
+    } catch (err: unknown) {
+      const errorData = (err as AxiosError<ErrorResponse>).response?.data;
       setError(errorData?.error_description || 'Login failed');
     } finally {
       setIsSubmitting(false);
