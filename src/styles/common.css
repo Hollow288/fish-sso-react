@@ -919,6 +919,113 @@ body {
   gap: 8px;
 }
 
+.ac-list {
+  display: grid;
+  gap: 8px;
+}
+
+.ac-card {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface-soft);
+}
+
+.ac-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.ac-card__info {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.ac-card__name {
+  font-size: 0.92rem;
+  color: var(--text-strong);
+  word-break: break-word;
+}
+
+.ac-card__time {
+  font-size: 0.78rem;
+  color: var(--text-soft);
+}
+
+.ac-card__actions {
+  display: flex;
+  flex-shrink: 0;
+  gap: 6px;
+}
+
+.ac-card__visit {
+  border-color: var(--border-strong) !important;
+  color: var(--brand) !important;
+  background: #ffffff !important;
+  text-decoration: none;
+}
+
+.ac-card__visit:hover {
+  background: var(--brand-soft) !important;
+  box-shadow: 0 4px 10px rgba(47, 109, 245, 0.12) !important;
+}
+
+.ac-card__revoke {
+  flex-shrink: 0;
+  border-color: #f5cccc !important;
+  color: var(--danger) !important;
+  background: #ffffff !important;
+}
+
+.ac-card__revoke:hover:not(:disabled) {
+  background: var(--danger-soft) !important;
+  box-shadow: 0 4px 10px rgba(227, 78, 78, 0.12) !important;
+}
+
+.ac-card__scopes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.ac-card__scope {
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  padding: 0 9px;
+  border-radius: 999px;
+  background: var(--brand-soft);
+  color: var(--brand);
+  font-size: 0.76rem;
+  font-weight: 600;
+}
+
+.ac-empty {
+  padding: 20px;
+  text-align: center;
+  color: var(--text-soft);
+  font-size: 0.9rem;
+}
+
+.ac-empty p {
+  margin: 0;
+}
+
+.ac-logout {
+  margin-top: 4px;
+  background: linear-gradient(135deg, var(--danger) 0%, #f06565 60%, #e34e4e 100%) !important;
+  box-shadow: 0 5px 14px rgba(227, 78, 78, 0.3) !important;
+}
+
+.ac-logout:hover:not(:disabled) {
+  box-shadow: 0 8px 18px rgba(227, 78, 78, 0.36) !important;
+}
+
 @keyframes fade-up {
   from {
     opacity: 0;

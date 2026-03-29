@@ -49,3 +49,10 @@ export interface ResetPasswordRequest {
   new_password: string;
   code: string;
 }
+
+export interface AuthorizedClient {
+  client_id: string;
+  scopes: string[];
+  authorized_at: number;
+  home_url?: string | null;
+}
