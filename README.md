@@ -34,7 +34,7 @@ npm install
 npm run dev
 ```
 
-Vite 开发服务器默认监听 `http://localhost:5173`。
+Vite 开发服务器监听 `http://localhost:5174`，与后台 Vue 的默认 5173 端口分开。
 
 ### 代理配置
 
@@ -42,6 +42,7 @@ Vite 开发服务器默认监听 `http://localhost:5173`。
 
 - `/api/*` → `http://localhost:9000/*`（前端 axios 的 `baseURL` 为 `/api`）
 - `/sso/*` → `http://localhost:9000/sso/*`
+- `/.well-known/*` → `http://localhost:9000/.well-known/*`（OIDC 元数据）
 
 生产部署时，需在反向代理（如 Nginx）中配置相同规则，或将前端与后端部署到同一域名下。
 
@@ -118,11 +119,19 @@ server {
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
     }
+
+    location /.well-known/ {
+        proxy_pass http://127.0.0.1:9000/.well-known/;
+        proxy_set_header Host $host;
+    }
 }
 ```
 
 ## 注意事项
 
+- 推送到 `master` 或手动运行 GitHub Actions 的 `deploy.yml`，会构建 React 页面并推送 `hollow288/fish-sso-react:latest`。仓库需要配置 `DOCKER_USERNAME` 和 `DOCKER_PASSWORD` 两个 GitHub Secrets。
+- 镜像内的 Nginx 会把 `/api/`、`/sso/`、`/.well-known/` 代理到 `SSO_BACKEND_URL`，默认为 `http://fish-sso:9000`。部署时让两个容器处于同一个 Docker 网络，或把该环境变量设为后端可访问地址（不要加末尾斜杠）。
+- 镜像监听 80；生产环境应在前方配置 HTTPS 入口，并让 SSO 后端的 `issuer` 与公开地址一致。
 - axios 实例全局启用了 `withCredentials: true`，请求会自动携带 `SSO_SESSION` Cookie。
 - 登录页的 `return_to` 参数只允许同源路径，外部地址会被忽略，跳回 `/`。
 - OAuth 回调页（`/callback`）仅负责接收参数并转交业务系统；`client_secret` 换 token 的操作应在业务系统服务端完成，不要在浏览器端调用 `/sso/token`。
