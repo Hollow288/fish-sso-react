@@ -120,8 +120,9 @@ export default function Consent() {
 
   return (
     <PageShell
-      title="授权确认"
-      description="确认是否将账号权限授予该应用。"
+      eyebrow="授权确认"
+      title="确认应用访问"
+      description="请检查以下信息，再决定是否向应用授予权限。"
       headerIconSrc="/favicon.svg"
       headerIconAlt="Fish SSO"
       variant="auth"

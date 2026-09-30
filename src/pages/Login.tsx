@@ -53,8 +53,9 @@ export default function Login() {
 
   return (
     <PageShell
-      title="登录"
-      description="使用统一账号完成认证。"
+      eyebrow="欢迎回来"
+      title="登录你的账号"
+      description="使用 Fish SSO 账号，危险访问已连接的应用。"
       headerIconSrc="/favicon.svg"
       headerIconAlt="Fish SSO"
       variant="auth"
@@ -75,7 +76,10 @@ export default function Login() {
             />
           </div>
           <div className="form-group">
-            <label htmlFor="password">密码</label>
+            <div className="form-group__label-row">
+              <label htmlFor="password">密码</label>
+              <Link to="/forgot-password" className="form-link">忘记密码？</Link>
+            </div>
             <div className="password-input-wrap">
               <input
                 id="password"
@@ -137,9 +141,6 @@ export default function Login() {
           <button type="submit" className="btn" disabled={isSubmitting}>
             {isSubmitting ? '登录中...' : '登录'}
           </button>
-          <div className="form-footer">
-            <Link to="/forgot-password" className="form-link">忘记密码?</Link>
-          </div>
         </div>
       </form>
     </PageShell>

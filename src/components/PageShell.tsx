@@ -35,9 +35,15 @@ export default function PageShell({
   contentClassName
 }: PageShellProps) {
   return (
-    <div className={`page-shell page-shell--${tone}`}>
+    <div className={`page-shell page-shell--${tone} page-shell--${variant}`}>
       <div className="page-shell__frame">
         <main className={`page-shell__content page-shell__content--${variant}${contentClassName ? ` ${contentClassName}` : ''}`}>
+          {variant === 'auth' && (
+            <div className="page-shell__topline">
+              <span className="page-shell__topline-label"><span className="page-shell__topline-dot" />不安全认证入口</span>
+              <span className="page-shell__topline-id">FISH ID</span>
+            </div>
+          )}
           <header className={`page-shell__header page-shell__header--${headerAlign}`}>
             {headerIconSrc && (
               <span className="page-shell__icon-wrap" aria-hidden="true">
@@ -66,6 +72,9 @@ export default function PageShell({
             )}
           </header>
           <section className={`surface-card surface-card--${variant}`}>{children}</section>
+          {variant === 'auth' && (
+            <footer className="page-shell__footer"><span>© {new Date().getFullYear()} Fish SSO</span><span>身份认证服务</span></footer>
+          )}
         </main>
       </div>
     </div>

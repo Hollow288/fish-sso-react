@@ -132,8 +132,9 @@ export default function ForgotPassword() {
 
   return (
     <PageShell
-      title={step === 'send-code' ? '忘记密码' : '重置密码'}
-      description={step === 'send-code' ? '输入用户名和绑定邮箱，获取验证码。' : undefined}
+      eyebrow="账号恢复"
+      title={step === 'send-code' ? '找回你的密码' : '设置新密码'}
+      description={step === 'send-code' ? '输入用户名和绑定邮箱，我们会发送一封验证邮件。' : '输入验证码，为你的账号设置一个新密码。'}
       headerIconSrc="/favicon.svg"
       headerIconAlt="Fish SSO"
       variant="auth"

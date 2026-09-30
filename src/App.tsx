@@ -5,6 +5,7 @@ import Consent from './pages/Consent';
 import Callback from './pages/Callback';
 import Home from './pages/Home';
 import './styles/common.css';
+import './styles/redesign.css';
 
 function App() {
   return (
