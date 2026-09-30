@@ -60,3 +60,15 @@ export interface AuthorizedClient {
   authorized_at: number;
   home_url?: string | null;
 }
+
+export interface CurrentUser {
+  sub: string;
+  username: string;
+  name: string | null;
+  email: string | null;
+}
+
+export interface ChangePasswordRequest {
+  current_password: string;
+  new_password: string;
+}

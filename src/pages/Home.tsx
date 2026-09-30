@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import type { AxiosError } from 'axios';
 import { authApi } from '../api/auth';
-import type { AuthorizedClient, ErrorResponse } from '../types/api';
+import type { AuthorizedClient, CurrentUser, ErrorResponse } from '../types/api';
 import PageShell from '../components/PageShell';
 
 const scopeLabels: Record<string, string> = {
@@ -25,9 +25,15 @@ function formatTime(ts: number): string {
   });
 }
 
+function initial(value: string): string {
+  return Array.from(value.trim())[0]?.toUpperCase() || 'F';
+}
+
 export default function Home() {
   const navigate = useNavigate();
   const [clients, setClients] = useState<AuthorizedClient[] | null>(null);
+  const [account, setAccount] = useState<CurrentUser | null>(null);
+  const [accountError, setAccountError] = useState('');
   const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
   const [revoking, setRevoking] = useState<string | null>(null);
   const [loggingOut, setLoggingOut] = useState(false);
@@ -35,19 +41,29 @@ export default function Home() {
 
   useEffect(() => {
     const load = async () => {
-      try {
-        const res = await authApi.getAuthorizedClients();
-        setClients(res.data);
-        setLoggedIn(true);
-      } catch (err: unknown) {
-        const axiosError = err as AxiosError<ErrorResponse>;
-        if (axiosError.response?.status === 401) {
-          setLoggedIn(false);
-        } else {
-          setError(axiosError.response?.data?.error_description || '加载失败');
-          setLoggedIn(true);
-        }
+      const [clientsResult, accountResult] = await Promise.allSettled([
+        authApi.getAuthorizedClients(),
+        authApi.getCurrentUser()
+      ]);
+      const clientsFailure = clientsResult.status === 'rejected'
+        ? clientsResult.reason as AxiosError<ErrorResponse> : null;
+      const accountFailure = accountResult.status === 'rejected'
+        ? accountResult.reason as AxiosError<ErrorResponse> : null;
+      if (clientsFailure?.response?.status === 401 || accountFailure?.response?.status === 401) {
+        setLoggedIn(false);
+        return;
       }
+      if (clientsResult.status === 'fulfilled') {
+        setClients(clientsResult.value.data);
+      } else {
+        setError(clientsFailure?.response?.data?.error_description || '授权信息加载失败');
+      }
+      if (accountResult.status === 'fulfilled') {
+        setAccount(accountResult.value.data);
+      } else {
+        setAccountError(accountFailure?.response?.data?.error_description || '账号信息加载失败');
+      }
+      setLoggedIn(true);
     };
     load();
   }, []);
@@ -119,73 +135,98 @@ export default function Home() {
     );
   }
 
-  // Logged in — show authorized clients
+  // Logged in — account center
   return (
-    <PageShell
-      eyebrow="已登录"
-      title="已授权的应用"
-      description="以下应用已获得您的账号授权，您可以随时撤销。"
-      headerIconSrc="/favicon.svg"
-      headerIconAlt="Fish SSO"
-      headerAlign="center"
-      tone="success"
-    >
-      {error && <div className="error">{error}</div>}
+    <div className="account-page">
+      <main className="account-page__container">
+        <header className="account-page__header">
+          <div className="account-page__heading">
+            <img className="account-page__logo" src="/favicon.svg" alt="Fish SSO" />
+            <div>
+              <p className="account-page__eyebrow">FISH SSO / 账号中心</p>
+              <h1>已授权的应用</h1>
+              <p className="account-page__description">查看并管理可访问你账号的应用。</p>
+            </div>
+          </div>
+          <button className="account-page__logout" type="button" onClick={handleLogout} disabled={loggingOut}>
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M10 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h4M15 16l4-4-4-4M9 12h10" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" /></svg>
+            {loggingOut ? '登出中...' : '登出'}
+          </button>
+        </header>
 
-      {clients && clients.length === 0 && (
-        <div className="ac-empty">
-          <p>暂无已授权的应用</p>
-        </div>
-      )}
-
-      {clients && clients.length > 0 && (
-        <div className="ac-list">
-          {clients.map((client) => (
-            <div className="ac-card" key={client.client_id}>
-              <div className="ac-card__header">
-                <div className="ac-card__info">
-                  <strong className="ac-card__name">{client.client_id}</strong>
-                  <span className="ac-card__time">授权于 {formatTime(client.authorized_at)}</span>
-                </div>
-                <div className="ac-card__actions">
-                  {client.home_url && (
-                    <a
-                      className="btn btn-secondary btn-small ac-card__visit"
-                      href={client.home_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      前往应用
-                    </a>
-                  )}
-                  <button
-                    className="btn btn-secondary btn-small ac-card__revoke"
-                    onClick={() => handleRevoke(client.client_id)}
-                    disabled={revoking !== null}
-                  >
-                    {revoking === client.client_id ? '撤销中...' : '撤销授权'}
-                  </button>
-                </div>
+        <div className="account-page__grid">
+          <section className="account-apps" aria-labelledby="account-apps-title">
+            <div className="account-section-heading">
+              <div>
+                <h2 id="account-apps-title">应用授权</h2>
+                <p>你可以随时撤销不再使用的应用。</p>
               </div>
-              <div className="ac-card__scopes">
-                {client.scopes.map((scope) => (
-                  <span className="ac-card__scope" key={scope}>
-                    {scopeLabels[scope] || scope}
-                  </span>
+              {clients && <span className="account-apps__count">{clients.length} 个应用</span>}
+            </div>
+            {error && <div className="error" role="alert">{error}</div>}
+            {clients?.length === 0 && (
+              <div className="account-apps__empty">
+                <span className="account-apps__empty-icon">✦</span>
+                <strong>暂无已授权的应用</strong>
+                <p>当你授权应用访问账号后，它们会显示在这里。</p>
+              </div>
+            )}
+            {clients && clients.length > 0 && (
+              <div className="account-apps__list">
+                {clients.map((client) => (
+                  <article className="grant-card" key={client.client_id}>
+                    <div className="grant-card__heading">
+                      <span className="grant-card__icon" aria-hidden="true">{initial(client.client_id)}</span>
+                      <div className="grant-card__name-group">
+                        <h3>{client.client_id}</h3>
+                        <p>授权于 {formatTime(client.authorized_at)}</p>
+                      </div>
+                    </div>
+                    <div className="grant-card__scopes" aria-label="已授权权限">
+                      {client.scopes.map((scope) => <span key={scope}>{scopeLabels[scope] || scope}</span>)}
+                    </div>
+                    <div className="grant-card__footer">
+                      <span>{client.scopes.length} 项访问权限</span>
+                      <div className="grant-card__actions">
+                        {client.home_url && <a href={client.home_url} target="_blank" rel="noopener noreferrer">前往应用 ↗</a>}
+                        <button type="button" onClick={() => handleRevoke(client.client_id)} disabled={revoking !== null}>
+                          {revoking === client.client_id ? '撤销中...' : '撤销授权'}
+                        </button>
+                      </div>
+                    </div>
+                  </article>
                 ))}
               </div>
-            </div>
-          ))}
-        </div>
-      )}
+            )}
+          </section>
 
-      <button
-        className="btn ac-logout"
-        onClick={handleLogout}
-        disabled={loggingOut}
-      >
-        {loggingOut ? '登出中...' : '登出'}
-      </button>
-    </PageShell>
+          <section className="account-profile" aria-labelledby="account-profile-title">
+            <div className="account-section-heading">
+              <div>
+                <h2 id="account-profile-title">账号信息</h2>
+                <p>当前登录的 Fish SSO 账号</p>
+              </div>
+            </div>
+            {account ? (
+              <>
+                <div className="account-profile__identity">
+                  <span className="account-profile__avatar" aria-hidden="true">{initial(account.name || account.username)}</span>
+                  <div><strong>{account.name || account.username}</strong><span>@{account.username}</span></div>
+                </div>
+                <dl className="account-profile__details">
+                  <div><dt>用户名</dt><dd>{account.username}</dd></div>
+                  <div><dt>绑定邮箱</dt><dd>{account.email || '未设置'}</dd></div>
+                </dl>
+              </>
+            ) : (
+              <p className="account-profile__error">{accountError || '账号信息暂不可用'}</p>
+            )}
+            <Link className="account-profile__password" to="/change-password">
+              <span>修改密码</span><span aria-hidden="true">→</span>
+            </Link>
+          </section>
+        </div>
+      </main>
+    </div>
   );
 }

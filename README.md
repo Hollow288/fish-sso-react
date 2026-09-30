@@ -14,9 +14,10 @@
 
 | 路径 | 页面 | 说明 |
 |---|---|---|
-| `/` | Home | 用户中心，展示已授权应用，支持撤销授权和登出 |
+| `/` | Home | 用户中心，展示账号资料和已授权应用，支持撤销授权和登出 |
 | `/login` | Login | 登录页，支持 `return_to` 参数跳转 |
 | `/forgot-password` | ForgotPassword | 忘记密码，两步流程：发送验证码 → 重置密码 |
+| `/change-password` | ChangePassword | 登录后校验当前密码并修改密码；成功后重新登录 |
 | `/consent` 或 `/oauth/consent` | Consent | OAuth2 授权同意页 |
 | `/callback` 或 `/oauth/callback` | Callback | OAuth2 回调页，接收 `code` 和 `state` |
 
@@ -40,7 +41,7 @@ Vite 开发服务器监听 `http://localhost:5174`，与后台 Vue 的默认 517
 
 `vite.config.ts` 已配置代理，开发时无需关心跨域：
 
-- `/api/*` → `http://localhost:9000/*`（前端 axios 的 `baseURL` 为 `/api`）
+- `/api/*` → `http://localhost:9000/*`（前端 axios 的 `baseURL` 为 `/api`，账号中心使用 `/sso/me` 和 `/sso/password/change`）
 - `/sso/*` → `http://localhost:9000/sso/*`
 - `/.well-known/*` → `http://localhost:9000/.well-known/*`（OIDC 元数据）
 
@@ -59,6 +60,7 @@ src/
 │   ├── Home.tsx          # 用户中心
 │   ├── Login.tsx         # 登录页
 │   ├── ForgotPassword.tsx# 忘记密码
+│   ├── ChangePassword.tsx# 登录后修改密码
 │   ├── Consent.tsx       # 授权同意页
 │   └── Callback.tsx      # OAuth 回调页
 ├── styles/

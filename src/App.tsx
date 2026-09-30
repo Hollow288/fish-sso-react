@@ -4,8 +4,10 @@ import ForgotPassword from './pages/ForgotPassword';
 import Consent from './pages/Consent';
 import Callback from './pages/Callback';
 import Home from './pages/Home';
+import ChangePassword from './pages/ChangePassword';
 import './styles/common.css';
 import './styles/redesign.css';
+import './styles/account.css';
 
 function App() {
   return (
@@ -13,6 +15,7 @@ function App() {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/change-password" element={<ChangePassword />} />
         <Route path="/consent" element={<Consent />} />
         <Route path="/oauth/consent" element={<Consent />} />
         <Route path="/callback" element={<Callback />} />

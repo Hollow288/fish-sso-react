@@ -1,5 +1,5 @@
 import api from './axios';
-import type { LoginRequest, SessionInfo, ConsentContext, ConsentRequest, ConsentResponse, ResetCodeRequest, ResetPasswordRequest, AuthorizedClient } from '../types/api';
+import type { LoginRequest, SessionInfo, ConsentContext, ConsentRequest, ConsentResponse, ResetCodeRequest, ResetPasswordRequest, AuthorizedClient, CurrentUser, ChangePasswordRequest } from '../types/api';
 
 export const authApi = {
   login: (data: LoginRequest) => api.post<SessionInfo>('/sso/login', data),
@@ -14,6 +14,10 @@ export const authApi = {
   resetPassword: (data: ResetPasswordRequest) => api.post('/sso/password/reset', data),
 
   getAuthorizedClients: () => api.get<AuthorizedClient[]>('/sso/authorized-clients'),
+
+  getCurrentUser: () => api.get<CurrentUser>('/sso/me'),
+
+  changePassword: (data: ChangePasswordRequest) => api.post('/sso/password/change', data),
 
   revokeClient: (clientId: string) => api.delete(`/sso/authorized-clients/${clientId}`),
 
