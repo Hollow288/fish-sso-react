@@ -84,6 +84,8 @@ src/
   → 业务系统用 code 换取 token（在服务端完成）
 ```
 
+启用 PKCE 时，业务系统在发起授权前生成 `code_verifier`，仅发送 `code_challenge` 和 `code_challenge_method=S256` 到 SSO。此页面在 `/consent` 流程中传递这两个参数；业务系统后端在换 token 时发送原始 verifier。页面本身不保存 verifier。
+
 ## 构建
 
 ```bash

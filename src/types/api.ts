@@ -18,6 +18,8 @@ export interface ConsentContext {
   state?: string;
   nonce?: string;
   scope?: string;
+  codeChallenge?: string;
+  codeChallengeMethod?: string;
 }
 
 export interface ConsentRequest {
@@ -26,6 +28,8 @@ export interface ConsentRequest {
   scope?: string;
   state?: string;
   nonce?: string;
+  code_challenge?: string;
+  code_challenge_method?: string;
   action: 'approve' | 'deny';
 }
 

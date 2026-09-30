@@ -52,6 +52,8 @@ export default function Consent() {
     const scope = searchParams.get('scope') || context?.scope || undefined;
     const state = searchParams.get('state') || context?.state || undefined;
     const nonce = searchParams.get('nonce') || context?.nonce || undefined;
+    const codeChallenge = searchParams.get('code_challenge') || context?.codeChallenge || undefined;
+    const codeChallengeMethod = searchParams.get('code_challenge_method') || context?.codeChallengeMethod || undefined;
 
     if (!clientId || !redirectUri) {
       setError('Missing required authorization parameters');
@@ -66,6 +68,8 @@ export default function Consent() {
         scope,
         state,
         nonce,
+        code_challenge: codeChallenge,
+        code_challenge_method: codeChallengeMethod,
         action
       });
       if (!res.data.redirect_url) {
