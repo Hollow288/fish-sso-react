@@ -77,16 +77,19 @@ src/
 用户访问业务系统
   → 业务系统构造 /sso/authorize 链接并跳转
   → SSO 后端重定向到 /consent?...
-  → 若未登录：前端检测到 401 login_required，跳转 /login?return_to=/consent?...
+  → 若未登录：前端检测到 401 login_required，使用后端 login_url 跳转 /login?return_to=/sso/authorize?...
   → 用户在登录页提交账号密码
-  → 登录成功后跳回 /consent?...
-  → 用户点击"同意"，前端 POST /consent
+  → 登录成功后整页跳回 /sso/authorize?...，重新检查已有授权
+  → 已授权且覆盖请求范围：直接返回业务系统；首次授权、已撤销或新增权限：进入 /consent?...
+  → 需要确认时用户点击"同意"，前端 POST /consent
   → SSO 后端返回 redirect_url（含 code 和 state）
   → 前端跳转到业务系统回调地址
   → 业务系统用 code 换取 token（在服务端完成）
 ```
 
 启用 PKCE 时，业务系统在发起授权前生成 `code_verifier`，仅发送 `code_challenge` 和 `code_challenge_method=S256` 到 SSO。此页面在 `/consent` 流程中传递这两个参数；业务系统后端在换 token 时发送原始 verifier。页面本身不保存 verifier。
+
+登录页只向 `/sso/login` 提交账号和密码，收到 `200` 并建立会话后，再按 `return_to` 发起整页跳转。不要将 `return_to` 放入 Axios 登录请求，否则后端的 `303` 会在 Ajax 请求内继续授权并访问业务系统回调，可能因跨域失败。获取同意信息或提交同意时若会话过期，前端均使用后端返回的 `login_url` 重新登录；后端保留原授权参数，登录后重新检查授权。
 
 ## 构建
 

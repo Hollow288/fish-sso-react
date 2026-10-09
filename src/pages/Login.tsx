@@ -12,9 +12,12 @@ function normalizeReturnTo(returnTo: string | null) {
 
   try {
     const url = new URL(returnTo, window.location.origin);
+    if (url.origin !== window.location.origin || url.pathname.startsWith('//')) {
+      return '/';
+    }
     return `${url.pathname}${url.search}${url.hash}` || '/';
   } catch {
-    return returnTo.startsWith('/') ? returnTo : '/';
+    return '/';
   }
 }
 
@@ -38,10 +41,10 @@ export default function Login() {
     try {
       await authApi.login({
         username,
-        password,
-        return_to: rawReturnTo ? returnTo : undefined
+        password
       });
 
+      // 通过整页跳转继续授权，避免 Axios 跟随重定向访问业务系统回调。
       window.location.href = returnTo;
     } catch (err: unknown) {
       const errorData = (err as AxiosError<ErrorResponse>).response?.data;

@@ -80,7 +80,12 @@ export default function Consent() {
 
       window.location.href = res.data.redirect_url;
     } catch (err: unknown) {
-      const errorData = (err as AxiosError<ErrorResponse>).response?.data;
+      const axiosError = err as AxiosError<ErrorResponse>;
+      const errorData = axiosError.response?.data;
+      if (axiosError.response?.status === 401 && errorData?.login_url) {
+        window.location.href = errorData.login_url;
+        return;
+      }
       setError(errorData?.error_description || 'Action failed');
       setPendingAction(null);
     }
