@@ -29,6 +29,22 @@ function initial(value: string): string {
   return Array.from(value.trim())[0]?.toUpperCase() || 'F';
 }
 
+const iconPaths = {
+  logout: 'M10 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h4M15 16l4-4-4-4M9 12h10',
+  external: 'M14 4h6v6M20 4 10 14M10 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4',
+  shield: 'M12 3 4 6v6c0 4 4 7 8 9 4-2 8-5 8-9V6l-8-3ZM8.5 12l2.5 2.5 4.5-5',
+  apps: 'M4 4h6v6H4V4ZM14 4h6v6h-6V4ZM4 14h6v6H4v-6ZM14 14h6v6h-6v-6Z',
+  key: 'M15 14a5 5 0 1 0 0-10 5 5 0 0 0 0 10ZM11 12 3 20h4v-3h3v-3M16 8h.01'
+};
+
+function AccountIcon({ name }: { name: keyof typeof iconPaths }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d={iconPaths[name]} stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 export default function Home() {
   const navigate = useNavigate();
   const [clients, setClients] = useState<AuthorizedClient[] | null>(null);
@@ -138,94 +154,110 @@ export default function Home() {
   // Logged in — account center
   return (
     <div className="account-page">
-      <main className="account-page__container">
-        <header className="account-page__header">
-          <div className="account-page__heading">
-            <img className="account-page__logo" src="/favicon.svg" alt="Fish SSO" />
-            <div>
-              <p className="account-page__eyebrow">FISH SSO / 账号中心</p>
-              <h1>已授权的应用</h1>
-              <p className="account-page__description">查看并管理可访问你账号的应用。</p>
-            </div>
+      <header className="account-page__header">
+        <div className="account-page__nav">
+          <div className="account-page__brand">
+            <img className="account-page__logo" src="/favicon.svg" alt="" />
+            <span>Fish SSO</span>
+            <span className="account-page__brand-divider" aria-hidden="true" />
+            <span className="account-page__nav-label">账号中心</span>
           </div>
-          <button className="account-page__logout" type="button" onClick={handleLogout} disabled={loggingOut}>
-            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M10 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h4M15 16l4-4-4-4M9 12h10" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" /></svg>
-            {loggingOut ? '登出中...' : '登出'}
-          </button>
-        </header>
+          <div className="account-page__session">
+            <span className="account-page__session-status"><span />已登录</span>
+            <button className="account-page__logout" type="button" onClick={handleLogout} disabled={loggingOut}>
+              <AccountIcon name="logout" />
+              {loggingOut ? '登出中...' : '退出登录'}
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <main className="account-page__container">
+        <div className="account-page__intro">
+          <div className="account-page__title-row">
+            <h1 id="account-apps-title">已授权的应用</h1>
+            {clients && <span className="account-apps__count" aria-live="polite">{clients.length} 个应用</span>}
+          </div>
+          <p className="account-page__description">查看应用的访问权限，随时管理或撤销授权。</p>
+        </div>
 
         <div className="account-page__grid">
           <section className="account-apps" aria-labelledby="account-apps-title">
-            <div className="account-section-heading">
-              <div>
-                <h2 id="account-apps-title">应用授权</h2>
-                <p>你可以随时撤销不再使用的应用。</p>
-              </div>
-              {clients && <span className="account-apps__count">{clients.length} 个应用</span>}
-            </div>
             {error && <div className="error" role="alert">{error}</div>}
             {clients?.length === 0 && (
               <div className="account-apps__empty">
-                <span className="account-apps__empty-icon">✦</span>
-                <strong>暂无已授权的应用</strong>
-                <p>当你授权应用访问账号后，它们会显示在这里。</p>
+                <span className="account-apps__empty-icon"><AccountIcon name="apps" /></span>
+                <h2>还没有连接任何应用</h2>
+                <p>使用 Fish SSO 登录并授权应用后，<br />就能在这里查看和管理。</p>
               </div>
             )}
             {clients && clients.length > 0 && (
-              <div className="account-apps__list">
-                {clients.map((client) => (
-                  <article className="grant-card" key={client.client_id}>
-                    <div className="grant-card__heading">
-                      <span className="grant-card__icon" aria-hidden="true">{initial(client.client_id)}</span>
-                      <div className="grant-card__name-group">
-                        <h3>{client.client_id}</h3>
-                        <p>授权于 {formatTime(client.authorized_at)}</p>
+              <>
+                <div className="account-apps__list">
+                  {clients.map((client) => (
+                    <article className="grant-card" key={client.client_id}>
+                      <div className="grant-card__heading">
+                        <span className="grant-card__icon" data-tone={(client.client_id.codePointAt(0) || 0) % 3} aria-hidden="true">{initial(client.client_id)}</span>
+                        <div className="grant-card__name-group">
+                          <h2>{client.client_id}</h2>
+                          <p>授权于 {formatTime(client.authorized_at)}</p>
+                        </div>
                       </div>
-                    </div>
-                    <div className="grant-card__scopes" aria-label="已授权权限">
-                      {client.scopes.map((scope) => <span key={scope}>{scopeLabels[scope] || scope}</span>)}
-                    </div>
-                    <div className="grant-card__footer">
-                      <span>{client.scopes.length} 项访问权限</span>
-                      <div className="grant-card__actions">
-                        {client.home_url && <a href={client.home_url} target="_blank" rel="noopener noreferrer">前往应用 ↗</a>}
-                        <button type="button" onClick={() => handleRevoke(client.client_id)} disabled={revoking !== null}>
+                      <div className="grant-card__permissions">
+                        <p className="grant-card__label">已授权的访问权限<span>{client.scopes.length} 项权限</span></p>
+                        <div className="grant-card__scopes" aria-label="已授权权限">
+                          {client.scopes.map((scope) => <span key={scope}>{scopeLabels[scope] || scope}</span>)}
+                        </div>
+                      </div>
+                      <div className="grant-card__footer">
+                        {client.home_url ? (
+                          <a className="grant-card__visit" href={client.home_url} target="_blank" rel="noopener noreferrer" aria-label={`前往应用 ${client.client_id}（新窗口打开）`}>
+                            前往应用<AccountIcon name="external" />
+                          </a>
+                        ) : <span className="grant-card__no-link">未设置应用入口</span>}
+                        <button type="button" onClick={() => handleRevoke(client.client_id)} disabled={revoking !== null} aria-label={`撤销 ${client.client_id} 的授权`}>
                           {revoking === client.client_id ? '撤销中...' : '撤销授权'}
                         </button>
                       </div>
-                    </div>
-                  </article>
-                ))}
-              </div>
+                    </article>
+                  ))}
+                </div>
+                <p className="account-apps__note"><AccountIcon name="shield" /><span>撤销授权后，应用需经你同意才能再次访问账号。</span></p>
+              </>
             )}
           </section>
 
-          <section className="account-profile" aria-labelledby="account-profile-title">
-            <div className="account-section-heading">
-              <div>
+          <aside className="account-sidebar" aria-labelledby="account-profile-title">
+            <section className="account-profile">
+              <div className="account-section-heading">
                 <h2 id="account-profile-title">账号信息</h2>
-                <p>当前登录的 Fish SSO 账号</p>
+                <span>当前账号</span>
               </div>
+              {account ? (
+                <>
+                  <div className="account-profile__identity">
+                    <span className="account-profile__avatar" aria-hidden="true">{initial(account.name || account.username)}</span>
+                    <div><strong>{account.name || account.username}</strong><span>@{account.username}</span></div>
+                  </div>
+                  <dl className="account-profile__details">
+                    <div><dt>用户名</dt><dd>{account.username}</dd></div>
+                    <div><dt>绑定邮箱</dt><dd>{account.email || '未设置'}</dd></div>
+                  </dl>
+                </>
+              ) : (
+                <p className="account-profile__error" role="alert">{accountError || '账号信息暂不可用'}</p>
+              )}
+              <Link className="account-profile__password" to="/change-password">
+                <span><AccountIcon name="key" />修改密码</span><span aria-hidden="true">→</span>
+              </Link>
+            </section>
+            <div className="account-sidebar__note">
+              <AccountIcon name="shield" />
+              <div><strong>授权小提示</strong><p>仅向信任的应用授权，定期检查并清理不再使用的访问权限。</p></div>
             </div>
-            {account ? (
-              <>
-                <div className="account-profile__identity">
-                  <span className="account-profile__avatar" aria-hidden="true">{initial(account.name || account.username)}</span>
-                  <div><strong>{account.name || account.username}</strong><span>@{account.username}</span></div>
-                </div>
-                <dl className="account-profile__details">
-                  <div><dt>用户名</dt><dd>{account.username}</dd></div>
-                  <div><dt>绑定邮箱</dt><dd>{account.email || '未设置'}</dd></div>
-                </dl>
-              </>
-            ) : (
-              <p className="account-profile__error">{accountError || '账号信息暂不可用'}</p>
-            )}
-            <Link className="account-profile__password" to="/change-password">
-              <span>修改密码</span><span aria-hidden="true">→</span>
-            </Link>
-          </section>
+          </aside>
         </div>
+        <footer className="account-page__footer"><span>Fish SSO</span><span>统一身份 · 便捷连接</span></footer>
       </main>
     </div>
   );
